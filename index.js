@@ -1,79 +1,93 @@
-// Mobile nav toggle
-  const navToggle = document.getElementById('navToggle');
-  const mobileMenu = document.getElementById('mobileMenu');
-  navToggle.addEventListener('click', () => {
-    const isHidden = mobileMenu.classList.toggle('hidden');
-    navToggle.setAttribute('aria-expanded', String(!isHidden));
-  });
-  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-    mobileMenu.classList.add('hidden');
-    navToggle.setAttribute('aria-expanded', 'false');
-  }));
+// Mobile navigation
+const menuButton = document.querySelector('.menu');
+const navigation = document.querySelector('#navigation');
 
-  // Active link highlight on scroll
-  const sections = document.querySelectorAll('main section, .hero');
-  const navAnchors = document.querySelectorAll('.nav-links a, .mobile-menu a');
-  const setActive = (id) => {
-    navAnchors.forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === '#' + id);
-    });
-  };
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) setActive(entry.target.id);
-    });
-  }, { rootMargin: '-45% 0px -50% 0px' });
-  sections.forEach(s => s.id && observer.observe(s));
+function closeMenu() {
+  navigation.classList.remove('open');
+  menuButton.setAttribute('aria-expanded', 'false');
+}
 
-  // Contact form — replace FORM_ENDPOINT with your own Formspree (or similar) endpoint
-  const FORM_ENDPOINT = 'https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID';
-  const contactForm = document.getElementById('contactForm');
-  const formMsg = document.getElementById('formMsg');
+menuButton.addEventListener('click', () => {
+  const isOpen = navigation.classList.toggle('open');
+  menuButton.setAttribute('aria-expanded', String(isOpen));
+});
 
-  contactForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    formMsg.textContent = '';
-    formMsg.className = 'form-msg';
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && navigation.classList.contains('open')) {
+    closeMenu();
+    menuButton.focus();
+  }
+});
 
-    const data = new FormData(contactForm);
-    if (!data.get('name') || !data.get('email') || !data.get('message')) {
-      formMsg.textContent = 'Please fill in every field.';
-      formMsg.classList.add('err');
-      return;
-    }
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('header')) {
+    closeMenu();
+  }
+});
 
-    const submitBtn = contactForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending…';
+window.matchMedia('(min-width: 741px)').addEventListener('change', closeMenu);
 
-    try {
-      const res = await fetch(FORM_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: data
-      });
-      if (res.ok) {
-        formMsg.textContent = 'Thanks — we\u2019ll be in touch within one business day.';
-        formMsg.classList.add('ok');
-        contactForm.reset();
-      } else {
-        throw new Error('Request failed');
-      }
-    } catch (err) {
-      formMsg.textContent = 'Something went wrong. Email us directly at info@itwizservices.com.';
-      formMsg.classList.add('err');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Send message';
-    }
-  });
+// Carry the service selection over from the Services page.
+const contactForm = document.querySelector('#contactForm');
+const serviceSelect = document.querySelector('#service');
+const requestedService = new URLSearchParams(window.location.search).get('service');
 
-  // Newsletter form (same pattern — wire to your own endpoint)
-  const newsletterForm = document.getElementById('newsletterForm');
-  const newsMsg = document.getElementById('newsMsg');
-  newsletterForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    newsMsg.textContent = 'Subscribed — thanks for joining.';
-    newsMsg.classList.add('ok');
-    newsletterForm.reset();
-  });
+if (serviceSelect) {
+  const hasMatchingService = [...serviceSelect.options].some(
+    (option) => option.value === requestedService
+  );
+
+  if (hasMatchingService) {
+    serviceSelect.value = requestedService;
+  }
+}
+
+// Messages are sent by the visitor's email app, not by the website.
+contactForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  if (!contactForm.reportValidity()) {
+    return;
+  }
+
+  const formData = new FormData(contactForm);
+  const subject = 'IT-Wiz consultation: ' + formData.get('service');
+  const message = [
+    `Name: ${formData.get('name')}`,
+    `Email: ${formData.get('email')}`,
+    `Company: ${formData.get('company') || 'Not provided'}`,
+    `Service: ${formData.get('service')}`,
+    '',
+    formData.get('message'),
+  ].join('\n');
+
+  window.location.href =
+    `mailto:info@itwizservices.com?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(message)}`;
+
+  document.querySelector('#formMsg').textContent =
+    'Your email app has been requested. Review and send the draft there. ' +
+    'If it does not open, email info@itwizservices.com directly. ' +
+    'Your message has not been sent by this website.';
+});
+
+const newsletterForm = document.querySelector('#newsletterForm');
+
+newsletterForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  if (!newsletterForm.reportValidity()) {
+    return;
+  }
+
+  const email = new FormData(newsletterForm).get('email');
+  const message = 'Please subscribe this email address to IT-Wiz updates: ' + email;
+
+  window.location.href =
+    'mailto:info@itwizservices.com?subject=Newsletter%20subscription%20request' +
+    `&body=${encodeURIComponent(message)}`;
+
+  document.querySelector('#newsMsg').textContent =
+    'Send the request in your email app to ask to subscribe. ' +
+    'You are not subscribed yet.';
+});
