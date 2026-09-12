@@ -1,16 +1,19 @@
 # IT-Wiz website
 
-A responsive five-page redesign built with HTML, CSS, and JavaScript. No installation or build step is required.
+A responsive business website built for IT Wiz, an IT support and technology services company. The website provides a clean and accessible way for customers to learn about the company's services and get in touch for IT assistance.
 
-## Open locally
+## About the Project
 
-Open `index.html` in a browser. Keep all files and the `images` folder together. Alternatively, serve this directory using `python -m http.server 4173` and visit http://localhost:4173.
+The IT Wiz website was designed to give the business a professional online presence while making it easy for potential customers to understand the services offered.
 
-## Pages
+The project focuses on a simple user experience, responsive design, and a clean interface that works across desktop and mobile devices.
 
-- `index.html`: Home
-- `about.html`: About
-- `services.html`: All six services, with links to a preselected contact form
-- `testimonials.html`: Testimonials carried over from the supplied site
-- `contact.html`: Contact details, office map, and email preparation form
+## Features
+
+- Responsive design for desktop, tablet, and mobile
+- IT services and support information
+- Business information and branding
+- Easy-to-find contact information
+- Simple and intuitive navigation
+- Clean, professional user interface
 
